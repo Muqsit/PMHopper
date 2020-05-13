@@ -1,0 +1,7 @@
+name: PMHopper
+main: muqsit\pmhopper\Loader
+api: 4.0.0
+version: 0.0.1
+permissions:
+  pmhopper.command:
+    default: op
