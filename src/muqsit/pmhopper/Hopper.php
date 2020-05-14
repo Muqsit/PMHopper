@@ -61,11 +61,6 @@ class Hopper extends VanillaHopper{
 		if($this->canRescheduleTransferCooldown()){
 			$this->rescheduleTransferCooldown();
 		}
-		if($this->getInventoryAbove() === null){
-			HopperItemEntitySucker::getInstance()->subscribe($this->pos);
-		}else{
-			HopperItemEntitySucker::getInstance()->unsubscribe($this->pos);
-		}
 	}
 
 	public function readStateFromWorld() : void{

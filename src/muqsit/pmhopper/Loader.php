@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper;
 
+use muqsit\pmhopper\item\ItemEntityListener;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\event\Listener;
-use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 
 final class Loader extends PluginBase implements Listener{
+
+	/** @var ItemEntityListener */
+	private $item_entity_listener;
 
 	protected function onLoad() : void{
 		$hopper = VanillaBlocks::HOPPER();
@@ -31,9 +34,7 @@ final class Loader extends PluginBase implements Listener{
 			));
 		}
 
-		if(!HopperItemEntitySucker::hasInstance()){
-			HopperItemEntitySucker::setInstance(new HopperItemEntitySucker($this));
-		}
+		$this->item_entity_listener = new ItemEntityListener($this);
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		if($this->getConfig()->get("debug", false)){
@@ -43,27 +44,15 @@ final class Loader extends PluginBase implements Listener{
 		}
 	}
 
-	/**
-	 * @param WorldUnloadEvent $event
-	 * @priority MONITOR
-	 */
-	public function onWorldUnload(WorldUnloadEvent $event) : void{
-		HopperItemEntitySucker::getInstance()->unsubscribeWorld($event->getWorld());
-	}
-
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		if(isset($args[0])){
 			switch($args[0]){
-				case "debugsucker":
-					$instance = HopperItemEntitySucker::getInstance();
+				case "debugiel":
 					$sender->sendMessage($this->formatDebug([
-						"isSubscriptionsEmpty" => $instance->isSubscriptionsEmpty(),
-						"getSubscriptionsCount" => $instance->getSubscriptionsCount(),
-						"isUpdatesEmpty" => $instance->isUpdatesEmpty(),
-						"getUpdatesCount" => $instance->getUpdatesCount()
+						"isTicking" => $this->item_entity_listener->isTicking(),
+						"count(getEntities)" => count($this->item_entity_listener->getEntities())
 					], [
-						"If subscriptions count is 0, subscription must be empty",
-						"If updates count is 0, updates must be empty"
+						"isTicking must be false if count(getEntities) is 0"
 					]));
 					return true;
 			}
@@ -71,7 +60,7 @@ final class Loader extends PluginBase implements Listener{
 
 		$sender->sendMessage(
 			TextFormat::GOLD . "PMHopper Debug Command" . TextFormat::EOL .
-			TextFormat::GOLD . "/" . $label . " debugsucker" . TextFormat::GRAY . " - Information about HopperItemEntitySucker"
+			TextFormat::GOLD . "/" . $label . " debugiel" . TextFormat::GRAY . " - Information about item entity listener"
 		);
 		return true;
 	}
