@@ -81,7 +81,7 @@ final class ItemEntityListener implements Listener{
 		$this->entities[$entity->getId()] = new ItemEntityMovementNotifier($entity, $this);
 		if(count($this->entities) === 1){
 			assert($this->ticker === null);
-			$this->ticker = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function(int $currentTick) : void{ $this->tick(); }), HopperConfig::getInstance()->getItemsSuckingTickRate());
+			$this->ticker = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function() : void{ $this->tick(); }), HopperConfig::getInstance()->getItemsSuckingTickRate());
 		}
 	}
 
