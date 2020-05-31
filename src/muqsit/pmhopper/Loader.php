@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper;
 
+use muqsit\pmhopper\behaviour\HopperBehaviourManager;
 use muqsit\pmhopper\item\ItemEntityListener;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\VanillaBlocks;
@@ -22,6 +23,8 @@ final class Loader extends PluginBase implements Listener{
 	protected function onLoad() : void{
 		$hopper = VanillaBlocks::HOPPER();
 		BlockFactory::getInstance()->register(new Hopper($hopper->getIdInfo(), $hopper->getName(), $hopper->getBreakInfo()), true);
+
+		HopperBehaviourManager::registerDefaults();
 	}
 
 	protected function onEnable() : void{
@@ -60,11 +63,16 @@ final class Loader extends PluginBase implements Listener{
 
 		$sender->sendMessage(
 			TextFormat::GOLD . "PMHopper Debug Command" . TextFormat::EOL .
-			TextFormat::GOLD . "/" . $label . " debugiel" . TextFormat::GRAY . " - Information about item entity listener"
+			TextFormat::GOLD . "/{$label} debugiel" . TextFormat::GRAY . " - Information about item entity listener"
 		);
 		return true;
 	}
 
+	/**
+	 * @param array<string, mixed> $kv_entries
+	 * @param string[] $assertions
+	 * @return string
+	 */
 	private function formatDebug(array $kv_entries, array $assertions = []) : string{
 		$result = "";
 		foreach($kv_entries as $k => $v){
@@ -76,12 +84,12 @@ final class Loader extends PluginBase implements Listener{
 					$value = (string) $v;
 					break;
 			}
-			$result .= TextFormat::GOLD . $k . ": " . TextFormat::WHITE . $value . TextFormat::EOL;
+			$result .= TextFormat::GOLD . "{$k}: " . TextFormat::WHITE . $value . TextFormat::EOL;
 		}
 		if(count($assertions) > 0){
 			$result .= TextFormat::RED . "Assertions (" . count($assertions) . "):" . TextFormat::EOL;
 			foreach($assertions as $assertion){
-				$result .= TextFormat::RED . " - " . $assertion . TextFormat::EOL;
+				$result .= TextFormat::RED . " - {$assertion}" . TextFormat::EOL;
 			}
 		}
 		return $result;
