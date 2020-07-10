@@ -15,17 +15,17 @@ use ReflectionProperty;
 class Hopper extends VanillaHopper{
 
 	public function getInventory() : ?HopperInventory{
-		$tile = $this->pos->getWorldNonNull()->getTileAt($this->pos->x, $this->pos->y, $this->pos->z);
+		$tile = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y, $this->pos->z);
 		return $tile instanceof HopperTile ? $tile->getInventory() : null;
 	}
 
 	public function getContainerAbove() : ?Container{
-		$above = $this->pos->getWorldNonNull()->getTileAt($this->pos->x, $this->pos->y + 1, $this->pos->z);
+		$above = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y + 1, $this->pos->z);
 		return $above instanceof Container ? $above : null;
 	}
 
 	public function getContainerBelow() : ?Container{
-		$below = $this->pos->getWorldNonNull()->getTileAt($this->pos->x, $this->pos->y - 1, $this->pos->z);
+		$below = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y - 1, $this->pos->z);
 		return $below instanceof Container ? $below : null;
 	}
 
@@ -37,7 +37,7 @@ class Hopper extends VanillaHopper{
 		}
 
 		$facing_pos = $this->pos->getSide($_facing->getValue($this));
-		$facing = $this->pos->getWorldNonNull()->getTileAt($facing_pos->x, $facing_pos->y, $facing_pos->z);
+		$facing = $this->pos->getWorld()->getTileAt($facing_pos->x, $facing_pos->y, $facing_pos->z);
 		return $facing instanceof Container ? $facing : null;
 	}
 
@@ -46,7 +46,7 @@ class Hopper extends VanillaHopper{
 	}
 
 	protected function rescheduleTransferCooldown() : void{
-		$this->pos->getWorldNonNull()->scheduleDelayedBlockUpdate($this->pos, HopperConfig::getInstance()->getTransferCooldown());
+		$this->pos->getWorld()->scheduleDelayedBlockUpdate($this->pos, HopperConfig::getInstance()->getTransferCooldown());
 	}
 
 	protected function updateHopperTickers() : void{
