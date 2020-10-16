@@ -34,7 +34,9 @@ final class ItemEntityMovementNotifier{
 	}
 
 	public function update() : void{
-		$this->check($this->entity->getPosition());
+		if(!$this->entity->isClosed() && !$this->entity->isFlaggedForDespawn()){
+			$this->check($this->entity->getPosition());
+		}
 	}
 
 	private function check(Position $position) : void{

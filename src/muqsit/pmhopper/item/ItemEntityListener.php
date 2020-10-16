@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper\item;
 
+use Generator;
 use muqsit\pmhopper\HopperConfig;
 use muqsit\pmhopper\Loader;
+use muqsit\pmhopper\utils\iterator\AsyncIterator;
 use pocketmine\block\tile\Hopper;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\event\entity\EntityDespawnEvent;
@@ -26,6 +28,9 @@ final class ItemEntityListener implements Listener{
 
 	/** @var ItemEntityMovementNotifier[] */
 	private $entities = [];
+
+	/** @var bool */
+	private $scanning = false;
 
 	public function __construct(Loader $plugin){
 		$this->scheduler = $plugin->getScheduler();
@@ -108,8 +113,17 @@ final class ItemEntityListener implements Listener{
 	}
 
 	private function tick() : void{
-		foreach($this->entities as $entity){
-			$entity->update();
+		if(!$this->scanning){
+			AsyncIterator::iterate(function() : Generator{
+				$this->scanning = true;
+				reset($this->entities);
+				while(($entity = current($this->entities)) !== false){
+					$entity->update();
+					next($this->entities);
+					yield true;
+				}
+				$this->scanning = false;
+			}, 10);
 		}
 	}
 }
