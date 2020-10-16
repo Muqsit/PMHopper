@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace muqsit\pmhopper\item;
 
 use Generator;
+use InvalidArgumentException;
 use muqsit\pmhopper\HopperConfig;
 use muqsit\pmhopper\Loader;
 use muqsit\pmhopper\utils\iterator\AsyncIterator;
@@ -34,13 +35,21 @@ final class ItemEntityListener implements Listener{
 
 	public function __construct(Loader $plugin){
 		$this->scheduler = $plugin->getScheduler();
-		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
-		foreach($plugin->getServer()->getWorldManager()->getWorlds() as $world){
-			foreach($world->getEntities() as $entity){
-				if($entity instanceof ItemEntity && !$entity->isClosed()){
-					$this->onItemEntitySpawn($entity);
+
+		$tick_rate = HopperConfig::getInstance()->getItemsSuckingTickRate();
+		if($tick_rate > 0){
+			$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
+			foreach($plugin->getServer()->getWorldManager()->getWorlds() as $world){
+				foreach($world->getEntities() as $entity){
+					if($entity instanceof ItemEntity && !$entity->isClosed()){
+						$this->onItemEntitySpawn($entity);
+					}
 				}
 			}
+		}elseif($tick_rate === 0){
+			$plugin->getLogger()->debug("Skipping item entity ticking due to zero rate");
+		}else{
+			throw new InvalidArgumentException("Tick rate cannot be configured to be < 0, got {$tick_rate}");
 		}
 	}
 
