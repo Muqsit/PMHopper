@@ -23,8 +23,7 @@ class FurnaceHopperBehaviour implements HopperBehaviour{
 		assert($inventory instanceof FurnaceInventory);
 		$item = $inventory->getResult();
 		if(!$item->isNull()){
-			$config = HopperConfig::getInstance();
-			foreach($hopper_inventory->addItem($item->pop(min($item->getCount(), $config->getItemsSucked()))) as $residue){
+			foreach($hopper_inventory->addItem($item->pop(min($item->getCount(), HopperConfig::getInstance()->getTransferPerTick()))) as $residue){
 				$item->setCount($item->getCount() + $residue->getCount());
 			}
 			$inventory->setResult($item);
@@ -35,11 +34,11 @@ class FurnaceHopperBehaviour implements HopperBehaviour{
 		assert($inventory instanceof FurnaceInventory);
 		$fuel = $inventory->getFuel();
 		if($fuel->isNull() || $fuel->getCount() < $fuel->getMaxStackSize()){
-			$config = HopperConfig::getInstance();
+			$transfer_per_tick = HopperConfig::getInstance()->getTransferPerTick();
 			for($slot = 0, $max = $hopper_inventory->getSize(); $slot < $max; ++$slot){
 				$item = $hopper_inventory->getItem($slot);
 				if($fuel->isNull() ? $item->getFuelTime() > 0 : $item->equals($fuel)){
-					$transferred = min($fuel->getMaxStackSize() - $fuel->getCount(), $item->getCount(), $config->getItemsSucked());
+					$transferred = min($fuel->getMaxStackSize() - $fuel->getCount(), $item->getCount(), $transfer_per_tick);
 					$fuel = (clone $item)->setCount($fuel->getCount() + $transferred);
 					$inventory->setFuel($fuel);
 					$hopper_inventory->setItem($slot, $item->setCount($item->getCount() - $transferred));
@@ -55,11 +54,11 @@ class FurnaceHopperBehaviour implements HopperBehaviour{
 		assert($inventory instanceof FurnaceInventory);
 		$smelting = $inventory->getSmelting();
 		if($smelting->isNull() || $smelting->getCount() < $smelting->getMaxStackSize()){
-			$config = HopperConfig::getInstance();
+			$transfer_per_tick = HopperConfig::getInstance()->getTransferPerTick();
 			for($slot = 0, $max = $hopper_inventory->getSize(); $slot < $max; ++$slot){
 				$item = $hopper_inventory->getItem($slot);
 				if($smelting->isNull() ? $this->furnace_recipe_manager->match($item) !== null : $item->equals($smelting)){
-					$transferred = min($smelting->getMaxStackSize() - $smelting->getCount(), $item->getCount(), $config->getItemsSucked());
+					$transferred = min($smelting->getMaxStackSize() - $smelting->getCount(), $item->getCount(), $transfer_per_tick);
 					$smelting = (clone $item)->setCount($smelting->getCount() + $transferred);
 					$inventory->setSmelting($smelting);
 					$hopper_inventory->setItem($slot, $item->setCount($item->getCount() - $transferred));

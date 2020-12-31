@@ -24,33 +24,44 @@ final class HopperConfig{
 	}
 
 	/** @var int */
-	private $transfer_cooldown;
+	private $transfer_tick_rate;
 
 	/** @var int */
-	private $items_sucked;
+	private $transfer_per_tick;
 
 	/** @var int */
-	private $items_sucking_tick_rate;
+	private $item_sucking_tick_rate;
 
-	public function __construct(int $transfer_cooldown, int $items_sucked, int $items_sucking_tick_rate){
-		if($transfer_cooldown <= 0){
-			throw new InvalidArgumentException("Expected transfer cooldown to be > 0, got {$transfer_cooldown}");
+	/** @var int */
+	private $item_sucking_per_tick;
+
+	public function __construct(int $transfer_tick_rate, int $transfer_per_tick, int $item_sucking_tick_rate, int $item_sucking_per_tick){
+		if($transfer_tick_rate <= 0){
+			throw new InvalidArgumentException("transfer_tick_rate cannot be <= 0, got {$transfer_tick_rate}");
 		}
+		$this->transfer_tick_rate = $transfer_tick_rate;
+		$this->transfer_per_tick = $transfer_per_tick;
 
-		$this->transfer_cooldown = $transfer_cooldown;
-		$this->items_sucked = $items_sucked;
-		$this->items_sucking_tick_rate = $items_sucking_tick_rate;
+		if($item_sucking_tick_rate < 0){
+			throw new InvalidArgumentException("item_sucking_tick_rate cannot be < 0, got {$item_sucking_tick_rate}");
+		}
+		$this->item_sucking_tick_rate = $item_sucking_tick_rate;
+		$this->item_sucking_per_tick = $item_sucking_per_tick;
 	}
 
-	public function getTransferCooldown() : int{
-		return $this->transfer_cooldown;
+	public function getTransferTickRate() : int{
+		return $this->transfer_tick_rate;
 	}
 
-	public function getItemsSucked() : int{
-		return $this->items_sucked;
+	public function getTransferPerTick() : int{
+		return $this->transfer_per_tick;
 	}
 
-	public function getItemsSuckingTickRate() : int{
-		return $this->items_sucking_tick_rate;
+	public function getItemSuckingTickRate() : int{
+		return $this->item_sucking_tick_rate;
+	}
+
+	public function getItemSuckingPerTick() : int{
+		return $this->item_sucking_per_tick;
 	}
 }

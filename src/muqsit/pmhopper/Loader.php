@@ -32,9 +32,10 @@ final class Loader extends PluginBase implements Listener{
 		if(!HopperConfig::hasInstance()){
 			$config = $this->getConfig();
 			HopperConfig::setInstance(new HopperConfig(
-				$config->get("transfer-cooldown"),
-				$config->get("items-sucked"),
-				$config->get("items-sucking-tick-rate")
+				$config->getNested("transfer.tick-rate"),
+				$config->getNested("transfer.per-tick"),
+				$config->getNested("item-sucking.tick-rate"),
+				$config->getNested("item-sucking.per-tick")
 			));
 		}
 

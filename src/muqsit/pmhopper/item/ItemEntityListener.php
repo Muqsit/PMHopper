@@ -4,58 +4,41 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper\item;
 
-use Generator;
-use InvalidArgumentException;
+use ArrayIterator;
+use InvalidStateException;
 use muqsit\pmhopper\HopperConfig;
 use muqsit\pmhopper\Loader;
 use muqsit\pmhopper\utils\iterator\AsyncIterator;
+use muqsit\pmhopper\utils\iterator\handler\AsyncForeachHandler;
 use pocketmine\block\tile\Hopper;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\ItemSpawnEvent;
 use pocketmine\event\Listener;
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\scheduler\TaskHandler;
-use pocketmine\scheduler\TaskScheduler;
 use pocketmine\world\World;
 
 final class ItemEntityListener implements Listener{
 
-	/** @var TaskScheduler */
-	private $scheduler;
-
-	/** @var TaskHandler|null */
+	/** @var AsyncForeachHandler<int, ItemEntityMovementNotifier>|null */
 	private $ticker;
 
 	/** @var ItemEntityMovementNotifier[] */
 	private $entities = [];
 
-	/** @var bool */
-	private $scanning = false;
-
 	public function __construct(Loader $plugin){
-		$this->scheduler = $plugin->getScheduler();
-
-		$tick_rate = HopperConfig::getInstance()->getItemsSuckingTickRate();
-		if($tick_rate > 0){
-			$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
-			foreach($plugin->getServer()->getWorldManager()->getWorlds() as $world){
-				foreach($world->getEntities() as $entity){
-					if($entity instanceof ItemEntity && !$entity->isClosed()){
-						$this->onItemEntitySpawn($entity);
-					}
+		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
+		foreach($plugin->getServer()->getWorldManager()->getWorlds() as $world){
+			foreach($world->getEntities() as $entity){
+				if($entity instanceof ItemEntity && !$entity->isClosed()){
+					$this->onItemEntitySpawn($entity);
 				}
 			}
-		}elseif($tick_rate === 0){
-			$plugin->getLogger()->debug("Skipping item entity ticking due to zero rate");
-		}else{
-			throw new InvalidArgumentException("Tick rate cannot be configured to be < 0, got {$tick_rate}");
 		}
 	}
 
 	public function onItemEntityMove(ItemEntity $entity, int $x, int $y, int $z, World $world) : void{
-		if(!$entity->isFlaggedForDespawn()){
-			$tile = $world->getTileAt($x, $y - 1, $z);
+		for($i = 0; $i >= -1; --$i){
+			$tile = $world->getTileAt($x, $y + $i, $z);
 			if($tile instanceof Hopper){
 				$item = $entity->getItem();
 				$residue_count = 0;
@@ -93,17 +76,15 @@ final class ItemEntityListener implements Listener{
 
 	private function onItemEntitySpawn(ItemEntity $entity) : void{
 		$this->entities[$entity->getId()] = new ItemEntityMovementNotifier($entity, $this);
-		if(count($this->entities) === 1){
-			assert($this->ticker === null);
-			$this->ticker = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function() : void{ $this->tick(); }), HopperConfig::getInstance()->getItemsSuckingTickRate());
+		if($this->ticker === null){
+			$this->tick();
 		}
 	}
 
 	private function onItemEntityDespawn(ItemEntity $entity) : void{
 		if(isset($this->entities[$id = $entity->getId()])){
 			unset($this->entities[$id]);
-			if(count($this->entities) === 0){
-				assert($this->ticker !== null);
+			if($this->ticker !== null && count($this->entities) === 0){
 				$this->ticker->cancel();
 				$this->ticker = null;
 			}
@@ -121,18 +102,25 @@ final class ItemEntityListener implements Listener{
 		return $this->ticker !== null;
 	}
 
-	private function tick() : void{
-		if(!$this->scanning){
-			AsyncIterator::iterate(function() : Generator{
-				$this->scanning = true;
-				reset($this->entities);
-				while(($entity = current($this->entities)) !== false){
-					$entity->update();
-					next($this->entities);
-					yield true;
-				}
-				$this->scanning = false;
-			}, 10);
+	private function tick() : bool{
+		if($this->ticker !== null){
+			throw new InvalidStateException("Tried scheduling multiple item entity tickers");
 		}
+
+		$config = HopperConfig::getInstance();
+		$tick_rate = $config->getItemSuckingTickRate();
+		if($tick_rate > 0){
+			$per_tick = $config->getItemSuckingPerTick();
+			$this->ticker = AsyncIterator::forEach(new ArrayIterator($this->entities), $per_tick, $tick_rate)->as(static function(int $id, ItemEntityMovementNotifier $notifier) : bool{
+				$notifier->update();
+				return true;
+			})->then(function() : void{
+				$this->ticker = null;
+				$this->tick();
+			});
+			return true;
+		}
+
+		return false;
 	}
 }

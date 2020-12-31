@@ -1,18 +1,22 @@
-# PMHopper v0.0.1 Config file
+# PMHopper v1.0.0 Config file
 
-# Time (in ticks) until the next transfer
-# This transfer cooldown applies only to container -> container transfers. It does not cover item entity -> hopper
-# transfers.
-# Default: 8
-transfer-cooldown: 8
+# Item transfer Behaviour
+# Every "tick-rate" game ticks, "per-tick" items are transferred from container to container.
+# Default:
+#   tick-rate: 8
+#   per-tick: 1
+transfer:
+  tick-rate: 8
+  per-tick: 1
 
-# Number of items sucked at once from or by a container
-# Default: 1
-items-sucked: 1
-
-# Interval (in ticks) between checking for dropped items
-# Default: 1
-items-sucking-tick-rate: 1
+# Item-sucking Behaviour
+# Every "tick-rate" game ticks, "per-tick" number of item entities scan for hoppers below them.
+# Default:
+#  tick-rate: 1
+#  per-tick: 16
+item-sucking:
+  tick-rate: 1
+  per-tick: 16
 
 # Whether to enable the /pmhopper debug command (requires permission: "pmhopper.command")
 # Default: false

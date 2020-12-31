@@ -4,25 +4,12 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper\utils\iterator;
 
-/**
- * This class simplifies creation of asynchronous (un-threaded)
- * tasks.
- * Example:
- * 	$array = []; // a very big array
- * 	AsyncIterator::iterate(function() use($array) : Generator{
- * 		foreach($array as $key => $value){
- * 			// do something with $key, $value on main thread
- * 			yield true;
- * 		}
- * 		yield false; // quit async task
- * 	}, 5);	// foreach loop is broken to process 5 entries per tick
- * 			// or 5 "yield true;"s per tick.
- */
-
-use Closure;
 use muqsit\pmhopper\Loader;
-use pocketmine\scheduler\TaskHandler;
+use muqsit\pmhopper\utils\iterator\handler\AsyncForeachHandler;
+use muqsit\pmhopper\utils\iterator\handler\SimpleAsyncForeachHandler;
+use Iterator;
 use pocketmine\scheduler\TaskScheduler;
+use pocketmine\Server;
 
 final class AsyncIterator{
 
@@ -33,8 +20,20 @@ final class AsyncIterator{
 		self::$scheduler = $plugin->getScheduler();
 	}
 
-	public static function iterate(Closure $generator, int $entries_per_tick = 10, int $sleep_time = 1) : TaskHandler{
-		self::$scheduler->scheduleRepeatingTask($task = new AsyncIteratorTask($generator,  $entries_per_tick), $sleep_time);
-		return $task->getHandler();
+	/**
+	 * @param Iterator $iterable
+	 * @param int $entries_per_tick
+	 * @param int $sleep_time
+	 * @return AsyncForeachHandler
+	 *
+	 * @phpstan-template TKey
+	 * @phpstan-template TValue
+	 * @phpstan-param Iterator<TKey, TValue> $iterable
+	 * @phpstan-return AsyncForeachHandler<TKey, TValue>
+	 */
+	public static function forEach(Iterator $iterable, int $entries_per_tick = 10, int $sleep_time = 1) : AsyncForeachHandler{
+		$handler = new SimpleAsyncForeachHandler($iterable, $entries_per_tick);
+		self::$scheduler->scheduleDelayedRepeatingTask(new AsyncForeachTask($handler), 1, $sleep_time);
+		return $handler;
 	}
 }

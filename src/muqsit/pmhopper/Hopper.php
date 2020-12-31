@@ -45,7 +45,7 @@ class Hopper extends VanillaHopper{
 	}
 
 	protected function rescheduleTransferCooldown() : void{
-		$this->pos->getWorld()->scheduleDelayedBlockUpdate($this->pos, HopperConfig::getInstance()->getTransferCooldown());
+		$this->pos->getWorld()->scheduleDelayedBlockUpdate($this->pos, HopperConfig::getInstance()->getTransferTickRate());
 	}
 
 	protected function updateHopperTickers() : void{

@@ -15,11 +15,11 @@ final class DefaultHopperBehaviour implements HopperBehaviour{
 	}
 
 	public static function doTransferring(Inventory $from, Inventory $to) : bool{
-		$config = HopperConfig::getInstance();
+		$transfer_per_tick = HopperConfig::getInstance()->getTransferPerTick();
 		for($slot = 0, $max = $from->getSize(); $slot < $max; ++$slot){
 			$item = $from->getItem($slot);
 			if(!$item->isNull()){
-				foreach($to->addItem($item->pop(min($item->getCount(), $config->getItemsSucked()))) as $residue){
+				foreach($to->addItem($item->pop(min($item->getCount(), $transfer_per_tick))) as $residue){
 					$item->setCount($item->getCount() + $residue->getCount());
 				}
 				$from->setItem($slot, $item);
