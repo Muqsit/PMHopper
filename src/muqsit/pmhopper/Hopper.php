@@ -11,7 +11,6 @@ use pocketmine\block\tile\Container;
 use pocketmine\block\tile\Hopper as HopperTile;
 use pocketmine\block\tile\Tile;
 use pocketmine\math\Facing;
-use ReflectionProperty;
 
 class Hopper extends VanillaHopper{
 
@@ -25,15 +24,6 @@ class Hopper extends VanillaHopper{
 		return $above instanceof Container ? $above : null;
 	}
 
-	private function getHopperFacing() : int{
-		static $_facing = null;
-		if($_facing === null){
-			$_facing = new ReflectionProperty(VanillaHopper::class, "facing");
-			$_facing->setAccessible(true);
-		}
-		return $_facing->getValue($this);
-	}
-
 	public function getContainerFacing(int $face) : ?Container{
 		$facing_pos = $this->pos->getSide($face);
 		$facing = $this->pos->getWorld()->getTileAt($facing_pos->x, $facing_pos->y, $facing_pos->z);
@@ -41,7 +31,7 @@ class Hopper extends VanillaHopper{
 	}
 
 	protected function canRescheduleTransferCooldown() : bool{
-		return ($this->getContainerAbove() ?? $this->getContainerFacing($this->getHopperFacing())) !== null;
+		return ($this->getContainerAbove() ?? $this->getContainerFacing($this->getFacing())) !== null;
 	}
 
 	protected function rescheduleTransferCooldown() : void{
@@ -67,7 +57,7 @@ class Hopper extends VanillaHopper{
 	public function onScheduledUpdate() : void{
 		$hopper_inventory = $this->getInventory();
 		if($hopper_inventory !== null){
-			$face = $this->getHopperFacing();
+			$face = $this->getFacing();
 			$facing = $this->getContainerFacing($face);
 			if($facing !== null){
 				assert($facing instanceof Tile);
