@@ -6,7 +6,6 @@ namespace muqsit\pmhopper;
 
 use muqsit\pmhopper\behaviour\HopperBehaviourManager;
 use muqsit\pmhopper\item\ItemEntityListener;
-use muqsit\pmhopper\utils\iterator\AsyncIterator;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\command\Command;
@@ -39,7 +38,6 @@ final class Loader extends PluginBase implements Listener{
 			));
 		}
 
-		AsyncIterator::init($this);
 		$this->item_entity_listener = new ItemEntityListener($this);
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);

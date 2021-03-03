@@ -33,7 +33,7 @@ final class ItemEntityMovementNotifier{
 			$position->getFloorX(),
 			$position->getFloorY(),
 			$position->getFloorZ(),
-			$position->world
+			$position->getWorld()
 		);
 	}
 }

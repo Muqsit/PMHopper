@@ -6,10 +6,11 @@ namespace muqsit\pmhopper\item;
 
 use ArrayIterator;
 use InvalidStateException;
+use muqsit\asynciterator\AsyncIterator;
+use muqsit\asynciterator\handler\AsyncForeachHandler;
+use muqsit\asynciterator\handler\AsyncForeachResult;
 use muqsit\pmhopper\HopperConfig;
 use muqsit\pmhopper\Loader;
-use muqsit\pmhopper\utils\iterator\AsyncIterator;
-use muqsit\pmhopper\utils\iterator\handler\AsyncForeachHandler;
 use pocketmine\block\tile\Hopper;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\event\entity\EntityDespawnEvent;
@@ -19,13 +20,21 @@ use pocketmine\world\World;
 
 final class ItemEntityListener implements Listener{
 
+	/** @var AsyncIterator */
+	private $async_iterator;
+
 	/** @var AsyncForeachHandler<int, ItemEntityMovementNotifier>|null */
 	private $ticker;
 
-	/** @var ItemEntityMovementNotifier[] */
+	/**
+	 * @var ItemEntityMovementNotifier[]
+	 *
+	 * @phpstan-var array<int, ItemEntityMovementNotifier>
+	 */
 	private $entities = [];
 
 	public function __construct(Loader $plugin){
+		$this->async_iterator = new AsyncIterator($plugin->getScheduler());
 		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
 		foreach($plugin->getServer()->getWorldManager()->getWorlds() as $world){
 			foreach($world->getEntities() as $entity){
@@ -111,10 +120,10 @@ final class ItemEntityListener implements Listener{
 		$tick_rate = $config->getItemSuckingTickRate();
 		if($tick_rate > 0){
 			$per_tick = $config->getItemSuckingPerTick();
-			$this->ticker = AsyncIterator::forEach(new ArrayIterator($this->entities), $per_tick, $tick_rate)->as(static function(int $id, ItemEntityMovementNotifier $notifier) : bool{
+			$this->ticker = $this->async_iterator->forEach(new ArrayIterator($this->entities), $per_tick, $tick_rate)->as(static function(int $id, ItemEntityMovementNotifier $notifier) : AsyncForeachResult{
 				$notifier->update();
-				return true;
-			})->then(function() : void{
+				return AsyncForeachResult::CONTINUE();
+			})->onCompletion(function() : void{
 				$this->ticker = null;
 				$this->tick();
 			});
