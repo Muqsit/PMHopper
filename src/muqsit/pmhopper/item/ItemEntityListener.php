@@ -50,15 +50,15 @@ final class ItemEntityListener implements Listener{
 			$tile = $world->getTileAt($x, $y + $i, $z);
 			if($tile instanceof Hopper){
 				$item = $entity->getItem();
-				$residue_count = 0;
-				foreach($tile->getInventory()->addItem($item) as $residue){
-					assert($residue_count === 0); // addItem() can't return > 1
-					$residue_count = $residue->getCount();
-				}
-				if($residue_count === 0){
-					$entity->flagForDespawn();
-				}else{
+				if(!$item->isNull()){
+					$residue_count = 0;
+					foreach($tile->getInventory()->addItem($item) as $residue){
+						$residue_count += $residue->getCount();
+					}
 					$item->setCount($residue_count);
+					if($residue_count === 0){
+						$entity->flagForDespawn();
+					}
 				}
 			}
 		}
@@ -84,9 +84,11 @@ final class ItemEntityListener implements Listener{
 	}
 
 	private function onItemEntitySpawn(ItemEntity $entity) : void{
-		$this->entities[$entity->getId()] = new ItemEntityMovementNotifier($entity, $this);
-		if($this->ticker === null){
-			$this->tick();
+		if(!$entity->isClosed() && !$entity->isFlaggedForDespawn()){
+			$this->entities[$entity->getId()] = new ItemEntityMovementNotifier($entity, $this);
+			if($this->ticker === null){
+				$this->tick();
+			}
 		}
 	}
 

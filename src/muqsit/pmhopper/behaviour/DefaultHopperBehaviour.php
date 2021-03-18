@@ -19,9 +19,12 @@ final class DefaultHopperBehaviour implements HopperBehaviour{
 		for($slot = 0, $max = $from->getSize(); $slot < $max; ++$slot){
 			$item = $from->getItem($slot);
 			if(!$item->isNull()){
-				foreach($to->addItem($item->pop(min($item->getCount(), $transfer_per_tick))) as $residue){
-					$item->setCount($item->getCount() + $residue->getCount());
+				$residue_count = 0;
+				$deducted_count = min($item->getCount(), $transfer_per_tick);
+				foreach($to->addItem($item->pop($deducted_count)) as $residue){
+					$residue_count += $residue->getCount();
 				}
+				$item->setCount($item->getCount() + $residue_count);
 				$from->setItem($slot, $item);
 				break;
 			}
