@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace muqsit\pmhopper;
 
+use InvalidArgumentException;
 use muqsit\pmhopper\behaviour\HopperBehaviourManager;
+use muqsit\pmhopper\blockscheduler\LoadBalancingBlockScheduler;
+use muqsit\pmhopper\blockscheduler\SimpleBlockScheduler;
 use muqsit\pmhopper\item\ItemEntityListener;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\VanillaBlocks;
@@ -30,11 +33,23 @@ final class Loader extends PluginBase implements Listener{
 	protected function onEnable() : void{
 		if(!HopperConfig::hasInstance()){
 			$config = $this->getConfig();
+			switch($config_block_scheduler = $config->getNested("scheduler.type", "default")){
+				case "default":
+					$block_scheduler = SimpleBlockScheduler::getInstance();
+					break;
+				case "load_balancing":
+					$block_scheduler = new LoadBalancingBlockScheduler($this->getScheduler(), $config->getNested("scheduler.load_balancing.capacity"));
+					break;
+				default:
+					throw new InvalidArgumentException("Invalid block scheduler: {$config_block_scheduler}");
+			}
+
 			HopperConfig::setInstance(new HopperConfig(
 				$config->getNested("transfer.tick-rate"),
 				$config->getNested("transfer.per-tick"),
 				$config->getNested("item-sucking.tick-rate"),
-				$config->getNested("item-sucking.per-tick")
+				$config->getNested("item-sucking.per-tick"),
+				$block_scheduler
 			));
 		}
 

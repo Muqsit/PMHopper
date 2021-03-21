@@ -12,11 +12,24 @@ transfer:
 # Item-sucking Behaviour
 # Every "tick-rate" game ticks, "per-tick" number of item entities scan for hoppers below them.
 # Default:
-#  tick-rate: 1
-#  per-tick: 16
+#   tick-rate: 1
+#   per-tick: 16
 item-sucking:
   tick-rate: 1
   per-tick: 16
+
+# Hopper <-> Container Transfer Scheduler
+# Specify the scheduler to use for transfers between hoppers and containers.
+# Available scheduler types: default, load_balancing
+# If load_balancing is used, load_balancing.capacity number of hoppers will be ticked each tick.
+# Default:
+#   type: default
+#   load_balancing:
+#     capacity: 100
+scheduler:
+  type: default
+  load_balancing:
+    capacity: 100
 
 # Whether to enable the /pmhopper debug command (requires permission: "pmhopper.command")
 # Default: false

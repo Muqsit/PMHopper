@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace muqsit\pmhopper;
 
 use InvalidArgumentException;
+use muqsit\pmhopper\blockscheduler\BlockScheduler;
 
 final class HopperConfig{
 
@@ -20,6 +21,9 @@ final class HopperConfig{
 	}
 
 	public static function setInstance(HopperConfig $instance) : void{
+		if(self::$instance !== $instance && self::hasInstance()){
+			self::$instance->destroy();
+		}
 		self::$instance = $instance;
 	}
 
@@ -35,7 +39,10 @@ final class HopperConfig{
 	/** @var int */
 	private $item_sucking_per_tick;
 
-	public function __construct(int $transfer_tick_rate, int $transfer_per_tick, int $item_sucking_tick_rate, int $item_sucking_per_tick){
+	/** @var BlockScheduler */
+	private $block_scheduler;
+
+	public function __construct(int $transfer_tick_rate, int $transfer_per_tick, int $item_sucking_tick_rate, int $item_sucking_per_tick, BlockScheduler $block_scheduler){
 		if($transfer_tick_rate <= 0){
 			throw new InvalidArgumentException("transfer_tick_rate cannot be <= 0, got {$transfer_tick_rate}");
 		}
@@ -47,6 +54,8 @@ final class HopperConfig{
 		}
 		$this->item_sucking_tick_rate = $item_sucking_tick_rate;
 		$this->item_sucking_per_tick = $item_sucking_per_tick;
+
+		$this->block_scheduler = $block_scheduler;
 	}
 
 	public function getTransferTickRate() : int{
@@ -63,5 +72,13 @@ final class HopperConfig{
 
 	public function getItemSuckingPerTick() : int{
 		return $this->item_sucking_per_tick;
+	}
+
+	public function getBlockScheduler() : BlockScheduler{
+		return $this->block_scheduler;
+	}
+
+	private function destroy() : void{
+		$this->block_scheduler->destroy();
 	}
 }

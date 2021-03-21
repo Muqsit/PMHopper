@@ -14,6 +14,9 @@ use pocketmine\math\Facing;
 
 class Hopper extends VanillaHopper{
 
+	/** @var int */
+	private $_transfer_cap = 0;
+
 	public function getInventory() : ?HopperInventory{
 		$tile = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y, $this->pos->z);
 		return $tile instanceof HopperTile ? $tile->getInventory() : null;
@@ -35,7 +38,14 @@ class Hopper extends VanillaHopper{
 	}
 
 	protected function rescheduleTransferCooldown() : void{
-		$this->pos->getWorld()->scheduleDelayedBlockUpdate($this->pos, HopperConfig::getInstance()->getTransferTickRate());
+		$config = HopperConfig::getInstance();
+		$scheduler = $config->getBlockScheduler();
+
+		$requested_delay = $config->getTransferTickRate();
+		$actual_delay = $scheduler->scheduleDelayedBlockUpdate($this->pos->getWorld(), $this->pos, $config->getTransferTickRate());
+
+		assert($actual_delay >= $requested_delay);
+		$this->_transfer_cap = $config->getTransferPerTick() * (1 + ($actual_delay - $requested_delay));
 	}
 
 	protected function updateHopperTickers() : void{
@@ -59,19 +69,22 @@ class Hopper extends VanillaHopper{
 		if($hopper_inventory !== null){
 			$face = $this->getFacing();
 			$facing = $this->getContainerFacing($face);
+
+			$this->_transfer_cap ??= HopperConfig::getInstance()->getTransferPerTick();
+
 			if($facing !== null){
 				assert($facing instanceof Tile);
 				if($face !== Facing::DOWN){
-					HopperBehaviourManager::getFromTile($facing)->side($hopper_inventory, $facing->getInventory());
+					HopperBehaviourManager::getFromTile($facing)->side($hopper_inventory, $facing->getInventory(), $this->_transfer_cap);
 				}else{
-					HopperBehaviourManager::getFromTile($facing)->below($hopper_inventory, $facing->getInventory());
+					HopperBehaviourManager::getFromTile($facing)->below($hopper_inventory, $facing->getInventory(), $this->_transfer_cap);
 				}
 			}
 
 			$above = $this->getContainerAbove();
 			if($above !== null){
 				assert($above instanceof Tile);
-				HopperBehaviourManager::getFromTile($above)->above($hopper_inventory, $above->getInventory());
+				HopperBehaviourManager::getFromTile($above)->above($hopper_inventory, $above->getInventory(), $this->_transfer_cap);
 			}
 
 			if($this->canRescheduleTransferCooldown()){
