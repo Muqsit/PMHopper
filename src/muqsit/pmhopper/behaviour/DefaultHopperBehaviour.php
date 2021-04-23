@@ -15,8 +15,8 @@ final class DefaultHopperBehaviour implements HopperBehaviour{
 
 	public static function doTransferring(Inventory $from, Inventory $to, int $transfer_cap) : bool{
 		for($slot = 0, $max = $from->getSize(); $slot < $max; ++$slot){
-			if(!$from->isSlotEmpty($slot)){
-				$item = $from->getItem($slot);
+			$item = $from->getItem($slot);
+			if(!$item->isNull()){
 				$residue_count = 0;
 				$deducted_count = min($item->getCount(), $transfer_cap);
 				foreach($to->addItem($item->pop($deducted_count)) as $residue){
