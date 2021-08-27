@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace muqsit\pmhopper\behaviour;
 
 use pocketmine\block\tile\EnderChest;
-use pocketmine\block\tile\Furnace;
+use pocketmine\block\tile\NormalFurnace;
 use pocketmine\block\tile\Tile;
 use pocketmine\block\tile\TileFactory;
+use pocketmine\crafting\FurnaceType;
 use pocketmine\utils\Utils;
 
 final class HopperBehaviourManager{
@@ -24,7 +25,7 @@ final class HopperBehaviourManager{
 	public static function registerDefaults() : void{
 		self::registerFallback(DefaultHopperBehaviour::getInstance());
 		self::register(EnderChest::class, ImmobileHopperBehaviour::getInstance());
-		self::register(Furnace::class, new FurnaceHopperBehaviour());
+		self::register(NormalFurnace::class, new FurnaceHopperBehaviour(FurnaceType::FURNACE()));
 	}
 
 	/**

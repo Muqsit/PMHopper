@@ -6,6 +6,7 @@ namespace muqsit\pmhopper\behaviour;
 
 use pocketmine\block\inventory\FurnaceInventory;
 use pocketmine\crafting\FurnaceRecipeManager;
+use pocketmine\crafting\FurnaceType;
 use pocketmine\inventory\Inventory;
 use pocketmine\Server;
 
@@ -14,8 +15,8 @@ class FurnaceHopperBehaviour implements HopperBehaviour{
 	/** @var FurnaceRecipeManager */
 	private $furnace_recipe_manager;
 
-	public function __construct(){
-		$this->furnace_recipe_manager = Server::getInstance()->getCraftingManager()->getFurnaceRecipeManager();
+	public function __construct(FurnaceType $type){
+		$this->furnace_recipe_manager = Server::getInstance()->getCraftingManager()->getFurnaceRecipeManager($type);
 	}
 
 	public function above(Inventory $hopper_inventory, Inventory $inventory, int $transfer_cap) : void{

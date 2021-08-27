@@ -18,18 +18,18 @@ class Hopper extends VanillaHopper{
 	private $_transfer_cap = 0;
 
 	public function getInventory() : ?HopperInventory{
-		$tile = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y, $this->pos->z);
+		$tile = $this->position->getWorld()->getTileAt($this->position->x, $this->position->y, $this->position->z);
 		return $tile instanceof HopperTile ? $tile->getInventory() : null;
 	}
 
 	public function getContainerAbove() : ?Container{
-		$above = $this->pos->getWorld()->getTileAt($this->pos->x, $this->pos->y + 1, $this->pos->z);
+		$above = $this->position->getWorld()->getTileAt($this->position->x, $this->position->y + 1, $this->position->z);
 		return $above instanceof Container ? $above : null;
 	}
 
 	public function getContainerFacing(int $face) : ?Container{
-		$facing_pos = $this->pos->getSide($face);
-		$facing = $this->pos->getWorld()->getTileAt($facing_pos->x, $facing_pos->y, $facing_pos->z);
+		$facing_pos = $this->position->getSide($face);
+		$facing = $this->position->getWorld()->getTileAt($facing_pos->x, $facing_pos->y, $facing_pos->z);
 		return $facing instanceof Container ? $facing : null;
 	}
 
@@ -42,7 +42,7 @@ class Hopper extends VanillaHopper{
 		$scheduler = $config->getBlockScheduler();
 
 		$requested_delay = $config->getTransferTickRate();
-		$actual_delay = $scheduler->scheduleDelayedBlockUpdate($this->pos->getWorld(), $this->pos, $config->getTransferTickRate());
+		$actual_delay = $scheduler->scheduleDelayedBlockUpdate($this->position->getWorld(), $this->position, $config->getTransferTickRate());
 
 		assert($actual_delay >= $requested_delay);
 		$this->_transfer_cap = $config->getTransferPerTick() * (1 + ($actual_delay - $requested_delay));

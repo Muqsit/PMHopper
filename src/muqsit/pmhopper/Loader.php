@@ -14,11 +14,10 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
-use pocketmine\event\Listener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 
-final class Loader extends PluginBase implements Listener{
+final class Loader extends PluginBase{
 
 	/** @var ItemEntityListener */
 	private $item_entity_listener;
@@ -55,7 +54,6 @@ final class Loader extends PluginBase implements Listener{
 
 		$this->item_entity_listener = new ItemEntityListener($this);
 
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		if($this->getConfig()->get("debug", false)){
 			$command = new PluginCommand("pmhopper", $this, $this);
 			$command->setPermission("pmhopper.command");
