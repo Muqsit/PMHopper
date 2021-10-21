@@ -1,6 +1,6 @@
 name: PMHopper
 main: muqsit\pmhopper\Loader
-api: 4.0.0
+api: [4.0.0, 4.0.0-BETA6, 4.0.0-BETA7]
 version: 1.0.0
 permissions:
   pmhopper.command:
