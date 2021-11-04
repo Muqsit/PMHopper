@@ -65,7 +65,6 @@ class Hopper extends VanillaHopper{
 	}
 
 	public function onScheduledUpdate() : void{
-		return;
 		$hopper_inventory = $this->getInventory();
 		if($hopper_inventory !== null){
 			$face = $this->getFacing();
