@@ -52,7 +52,7 @@ final class Loader extends PluginBase{
 			));
 		}
 
-		$this->item_entity_listener = new ItemEntityListener($this);
+		//$this->item_entity_listener = new ItemEntityListener($this);
 
 		if($this->getConfig()->get("debug", false)){
 			$command = new PluginCommand("pmhopper", $this, $this);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace muqsit\pmhopper\item;
 
 use ArrayIterator;
-use InvalidStateException;
+use LogicException;
 use muqsit\asynciterator\AsyncIterator;
 use muqsit\asynciterator\handler\AsyncForeachHandler;
 use muqsit\asynciterator\handler\AsyncForeachResult;
@@ -115,7 +115,7 @@ final class ItemEntityListener implements Listener{
 
 	private function tick() : bool{
 		if($this->ticker !== null){
-			throw new InvalidStateException("Tried scheduling multiple item entity tickers");
+			throw new LogicException("Tried scheduling multiple item entity tickers");
 		}
 
 		$config = HopperConfig::getInstance();
